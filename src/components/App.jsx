@@ -1,31 +1,49 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import ContactForm from 'components/contactForm/ContactForm';
 import ContactList from 'components/contactList/ContactList';
 import Filter from 'components/filter/Filter';
 import css from './App.module.css';
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
+import { nanoid } from 'nanoid';
+
+export function App() {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
+
+  useEffect(() => {
+    const storageContacts = localStorage.getItem('contacts');
+    if (storageContacts) {
+      setContacts(JSON.parse(storageContacts));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const handleChange = event => {
+    switch (event.target.name) {
+      case 'name':
+        setName(event.target.value);
+        break;
+      case 'number':
+        setNumber(event.target.value);
+        break;
+      default:
+        return;
+    }
   };
 
-  componentDidMount() {
-    const storageContacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(storageContacts);
+  const onSubmit = evt => {
+    evt.preventDefault();
 
-    if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
-    }
-  }
+    const newContact = {
+      id: nanoid(),
+      name,
+      number,
+    };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
-  addContact = newContact => {
-    const { contacts } = this.state;
     if (
       contacts.some(
         contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
@@ -33,49 +51,48 @@ export class App extends Component {
     ) {
       alert(`${newContact.name} is already in contacts`);
     } else {
-      this.setState(prevState => ({
-        contacts: [...prevState.contacts, newContact],
-      }));
+      setContacts(prevState => [...prevState, newContact]);
+      setName('');
+      setNumber('');
     }
   };
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
-  };
-  changeFilter = evt => {
-    this.setState({ filter: evt.currentTarget.value });
+
+  const deleteContact = id => {
+    setContacts(prevState => prevState.filter(contact => contact.id !== id));
   };
 
-  render() {
-    const { filter, contacts } = this.state;
-    const findContacts = contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase())
-    );
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: 'rgb(59, 55, 55)',
-        }}
-      >
-        <div className={css.container}>
-          <h1 className={css.titlePage}>Phonebook</h1>
-          <ContactForm addContact={this.addContact} />
+  const changeFilter = evt => {
+    setFilter(evt.currentTarget.value);
+  };
 
-          <h2 className={css.titleList}>Contacts:</h2>
+  const findContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: 'rgb(59, 55, 55)',
+      }}
+    >
+      <div className={css.container}>
+        <h1 className={css.titlePage}>Phonebook</h1>
+        <ContactForm
+          name={name}
+          number={number}
+          onChange={handleChange}
+          onSubmit={onSubmit}
+        />
 
-          <ContactList
-            contacts={findContacts}
-            deleteContact={this.deleteContact}
-          />
+        <h2 className={css.titleList}>Contacts:</h2>
 
-          <Filter changeFilter={this.changeFilter} filter={filter} />
-        </div>
+        <ContactList contacts={findContacts} deleteContact={deleteContact} />
+
+        <Filter changeFilter={changeFilter} filter={filter} />
       </div>
-    );
-  }
+    </div>
+  );
 }
