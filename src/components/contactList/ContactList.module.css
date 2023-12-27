@@ -1,0 +1,26 @@
+.contactList {
+  list-style: circle;
+  padding-left: 0;
+}
+.contactItem {
+  padding-bottom: 15px;
+  font-size: 25px;
+  display: flex;
+  justify-content: space-between;
+}
+.buttonDelete {
+  width: 80px;
+  font-size: 15px;
+  background-color: #b5675a;
+  border: solid 1px #646663;
+  border-radius: 10px;
+  padding: 8px;
+  margin-left: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.buttonDelete:hover,
+.buttonDelete:focus {
+  background-color: #b15241;
+  border-color: #50544f;
+}
